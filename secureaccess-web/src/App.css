@@ -1,0 +1,153 @@
+
+:root {
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: #202b3c;
+  background: #f4f7fb;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 28px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #dfe5ee;
+  padding-bottom: 24px;
+}
+
+.eyebrow {
+  color: #5368b5;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+h1 {
+  margin: 4px 0;
+  font-size: 32px;
+}
+
+h2 {
+  font-size: 21px;
+}
+
+.environment {
+  background: #e5edff;
+  color: #334f9d;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.welcome {
+  margin: 32px 0 24px;
+}
+
+.welcome p {
+  color: #667085;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 36px;
+}
+
+.summary-card,
+.requests {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.summary-card span {
+  display: block;
+  color: #667085;
+  font-size: 14px;
+}
+
+.summary-card strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 32px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 16px 12px;
+  border-bottom: 1px solid #edf0f5;
+  white-space: nowrap;
+}
+
+th {
+  color: #667085;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.status {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status.pending {
+  background: #fff3d6;
+  color: #8a5b00;
+}
+
+.status.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+footer {
+  padding: 28px 0;
+  color: #667085;
+  font-size: 13px;
+}
+
+@media (max-width: 650px) {
+  .dashboard {
+    padding: 24px 16px;
+  }
+
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
