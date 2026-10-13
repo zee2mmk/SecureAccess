@@ -1,0 +1,34 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Visual Studio and local user settings
+.vs/
+*.user
+*.suo
+
+# Node.js dependencies and build output
+**/node_modules/
+**/dist/
+
+# Environment variables and local secrets
+.env
+.env.*
+!.env.example
+**/secrets.json
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Local development configuration
+/SecureAccess.Api/appsettings.Development.json
+
+# Local databases
+**/*.db
+**/*.mdf
+**/*.ldf
