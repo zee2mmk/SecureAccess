@@ -76,11 +76,19 @@ All workflow and data endpoints require authentication. The health endpoint is p
 
 ### 1. Configure the API
 
-Update `SecureAccess.Api/appsettings.json` with your local database connection string and Microsoft Entra ID settings.
+Copy `SecureAccess.Api/appsettings.example.json` to `SecureAccess.Api/appsettings.json`.
 
-Configure the API's expected audience to match the audience of access tokens issued for the API app registration.
+Update the copied file with your local database connection string and Microsoft Entra ID settings:
 
-Do not place client secrets, passwords, or other credentials in source control.
+- **Connection string:** Verify that it matches your SQL Server LocalDB setup.
+- **Tenant ID:** Replace `YOUR_ENTRA_TENANT_ID` with your Microsoft Entra tenant ID.
+- **API audience:** Replace `api://YOUR_API_APPLICATION_CLIENT_ID` with the expected audience for your API app registration.
+
+Configure the frontend's MSAL settings in `secureaccess-web/src/authConfig.ts` to match your own Microsoft Entra tenant and application registrations.
+
+Register and configure the required Microsoft Entra applications, API permissions, and redirect URIs before running the application.
+
+**Security note:** Never commit client secrets, passwords, access tokens, or other credentials to source control. The example configuration contains placeholders and is intended as a starting point for local development.
 
 ### 2. Run the backend
 
