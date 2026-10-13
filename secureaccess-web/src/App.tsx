@@ -13,6 +13,11 @@ type Employee = {
   department: string;
 };
 
+type CurrentUser = {
+  tenantId: string;
+  objectId: string;
+};
+
 type ManagedApplication = {
   id: number;
   name: string;
@@ -192,7 +197,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [processingReviewId, setProcessingReviewId] = useState<number | null>(null);
-  const [selectedReviewerId, setSelectedReviewerId] = useState("");
+  
   const [reviewComments, setReviewComments] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -224,16 +229,18 @@ function App() {
       try {
         setLoading(true);
         setError("");
-
-        const [employeeResponse, applicationResponse, requestResponse] =
+     
+        const [meResponse, employeeResponse, applicationResponse, requestResponse] =
           await Promise.all([
+            authenticatedFetch(`${API_URL}/api/me`),
             authenticatedFetch(`${API_URL}/api/employees`),
             authenticatedFetch(`${API_URL}/api/applications`),
             authenticatedFetch(`${API_URL}/api/access-requests`),
           ]);
 
-        const [employeeData, applicationData, requestData] =
+        const [, employeeData, applicationData, requestData] =
           await Promise.all([
+            readResponse<CurrentUser>(meResponse),
             readResponse<Employee[]>(employeeResponse),
             readResponse<ManagedApplication[]>(applicationResponse),
             readResponse<AccessRequest[]>(requestResponse),
@@ -332,11 +339,6 @@ function App() {
     setError("");
     setSuccess("");
 
-    if (!selectedReviewerId) {
-      setError("Please select a reviewer before processing a request.");
-      return;
-    }
-
     const confirmed = window.confirm(
       `Are you sure you want to ${decision.toLowerCase()} access request #${requestId}?`
     );
@@ -355,8 +357,7 @@ function App() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            reviewerEmployeeId: Number(selectedReviewerId),
+          body: JSON.stringify({        
             decision,
             comments: reviewComments.trim() || null,
           }),
@@ -670,22 +671,6 @@ function App() {
               </div>
 
               <div className="review-controls">
-                <label>
-                  Reviewer
-                  <select
-                    value={selectedReviewerId}
-                    onChange={(event) => setSelectedReviewerId(event.target.value)}
-                    disabled={processingReviewId !== null}
-                  >
-                    <option value="">Select a reviewer</option>
-                    {employees.map((employee) => (
-                      <option key={employee.id} value={employee.id}>
-                        {employee.fullName} — {employee.department}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
                 <label>
                   Review Comments
                   <textarea

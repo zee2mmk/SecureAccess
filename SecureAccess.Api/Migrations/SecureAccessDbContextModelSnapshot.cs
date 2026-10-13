@@ -125,6 +125,9 @@ namespace SecureAccess.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("CanReviewAccessRequests")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -143,6 +146,10 @@ namespace SecureAccess.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("EntraObjectId")
+                        .HasMaxLength(36)
+                        .HasColumnType("nvarchar(36)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -158,6 +165,10 @@ namespace SecureAccess.Api.Migrations
 
                     b.HasIndex("EmployeeNumber")
                         .IsUnique();
+
+                    b.HasIndex("EntraObjectId")
+                        .IsUnique()
+                        .HasFilter("[EntraObjectId] IS NOT NULL");
 
                     b.ToTable("Employees");
                 });

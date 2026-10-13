@@ -51,6 +51,13 @@ public class SecureAccessDbContext : DbContext
             entity.Property(e => e.Department)
                 .HasMaxLength(100)
                 .IsRequired();
+
+            entity.Property(e => e.EntraObjectId)
+                .HasMaxLength(36);
+
+            entity.HasIndex(e => e.EntraObjectId)
+                .IsUnique()
+                .HasFilter("[EntraObjectId] IS NOT NULL");
         });
 
         modelBuilder.Entity<ManagedApplication>(entity =>

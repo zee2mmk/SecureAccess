@@ -12,7 +12,13 @@ public class Employee
 
     public string Department { get; set; } = string.Empty;
 
+    // Object ID of the employee's Microsoft Entra account.
+    // Null until an account is explicitly linked.
+    public string? EntraObjectId { get; set; }
+
     public bool IsActive { get; set; } = true;
+
+    public bool CanReviewAccessRequests { get; set; } = false;
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }

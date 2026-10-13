@@ -61,6 +61,45 @@ app.MapGet("/api/health", () => Results.Ok(new
     version = "1.0.0"
 }));
 
+app.MapGet("/api/me", (System.Security.Claims.ClaimsPrincipal user) =>
+{
+    var entra = builder.Configuration.GetSection("Entra");
+    var expectedTenantId = entra["TenantId"];
+
+    var tenantId =
+        user.FindFirst("tid")?.Value ??
+        user.FindFirst(
+            "http://schemas.microsoft.com/identity/claims/tenantid"
+        )?.Value;
+
+    var objectId =
+        user.FindFirst("oid")?.Value ??
+        user.FindFirst(
+            "http://schemas.microsoft.com/identity/claims/objectidentifier"
+        )?.Value;
+
+    if (string.IsNullOrWhiteSpace(tenantId) ||
+        !string.Equals(
+            tenantId,
+            expectedTenantId,
+            StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.Forbid();
+    }
+
+    if (string.IsNullOrWhiteSpace(objectId))
+    {
+        return Results.Problem(
+            "The authenticated token does not contain an Entra object ID.",
+            statusCode: StatusCodes.Status401Unauthorized);
+    }
+
+    return Results.Ok(new
+    {
+        tenantId,
+        objectId
+    });
+}).RequireAuthorization();
 
 app.MapGet("/api/access-requests", async (
     SecureAccessDbContext db,
@@ -274,9 +313,11 @@ app.MapPost("/api/access-requests", async (
         });
 }).RequireAuthorization();
 
+
 app.MapPut("/api/access-requests/{id:int}/review", async (
     int id,
     ReviewAccessRequestDto input,
+    System.Security.Claims.ClaimsPrincipal user,
     SecureAccessDbContext db,
     CancellationToken cancellationToken) =>
 {
@@ -291,20 +332,63 @@ app.MapPut("/api/access-requests/{id:int}/review", async (
         });
     }
 
-    if (input.ReviewerEmployeeId <= 0)
-    {
-        return Results.BadRequest(new
-        {
-            message = "A valid reviewer is required."
-        });
-    }
-
     if (input.Comments?.Length > 1000)
     {
         return Results.BadRequest(new
         {
             message = "Comments must be 1000 characters or fewer."
         });
+    }
+
+    // Resolve identity from the validated Entra access token.
+    var entra = builder.Configuration.GetSection("Entra");
+    var expectedTenantId = entra["TenantId"];
+
+    var tenantId =
+        user.FindFirst("tid")?.Value ??
+        user.FindFirst(
+            "http://schemas.microsoft.com/identity/claims/tenantid"
+        )?.Value;
+
+    var objectId =
+        user.FindFirst("oid")?.Value ??
+        user.FindFirst(
+            "http://schemas.microsoft.com/identity/claims/objectidentifier"
+        )?.Value;
+
+    if (string.IsNullOrWhiteSpace(tenantId) ||
+        !string.Equals(
+            tenantId,
+            expectedTenantId,
+            StringComparison.OrdinalIgnoreCase))
+    {
+        return Results.Forbid();
+    }
+
+    if (!Guid.TryParse(objectId, out var reviewerObjectId))
+    {
+        return Results.Unauthorized();
+    }
+
+    var reviewerObjectIdString = reviewerObjectId.ToString();
+
+    var reviewer = await db.Employees
+        .SingleOrDefaultAsync(
+            e => e.EntraObjectId == reviewerObjectIdString && e.IsActive,
+            cancellationToken);
+
+    if (reviewer is null)
+    {
+        return Results.Problem(
+            "Your signed-in account is not linked to an active SecureAccess employee.",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (!reviewer.CanReviewAccessRequests)
+    {
+        return Results.Problem(
+            "You are not authorized to review access requests.",
+            statusCode: StatusCodes.Status403Forbidden);
     }
 
     var request = await db.AccessRequests
@@ -328,24 +412,12 @@ app.MapPut("/api/access-requests/{id:int}/review", async (
         });
     }
 
-    if (request.EmployeeId == input.ReviewerEmployeeId)
+    // The reviewer is derived from the authenticated identity, not the request body.
+    if (request.EmployeeId == reviewer.Id)
     {
         return Results.BadRequest(new
         {
             message = "Employees cannot approve or reject their own access requests."
-        });
-    }
-
-    var reviewer = await db.Employees
-        .SingleOrDefaultAsync(
-            e => e.Id == input.ReviewerEmployeeId && e.IsActive,
-            cancellationToken);
-
-    if (reviewer is null)
-    {
-        return Results.BadRequest(new
-        {
-            message = "The reviewer does not exist or is inactive."
         });
     }
 
