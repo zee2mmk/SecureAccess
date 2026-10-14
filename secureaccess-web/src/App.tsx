@@ -190,6 +190,7 @@ function App() {
   }
 
   const [requests, setRequests] = useState<AccessRequest[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [applications, setApplications] = useState<ManagedApplication[]>([]);
   const [form, setForm] = useState<RequestForm>(initialForm);
@@ -468,6 +469,9 @@ function App() {
     safeCurrentPage * pageSize
   );
 
+  const selectedRequest =
+    requests.find((request) => request.id === selectedRequestId) ?? null;
+
   const sidebar = (
     <Sidebar
       activeView={activeView}
@@ -671,7 +675,44 @@ function App() {
               </div>
 
               <div className="review-controls">
-                <label>
+                <div className="review-request-details">
+                  <div className="review-detail">
+                    <span>Request ID</span>
+                    <strong>
+                      {selectedRequest ? `#${selectedRequest.id}` : "Select a request"}
+                    </strong>
+                  </div>
+
+                  <div className="review-detail">
+                    <span>Employee</span>
+                    <strong>{selectedRequest?.employee ?? "—"}</strong>
+                  </div>
+
+                  <div className="review-detail">
+                    <span>Application</span>
+                    <strong>{selectedRequest?.application ?? "—"}</strong>
+                  </div>
+
+                  <div className="review-detail">
+                    <span>Requested Role</span>
+                    <strong>{selectedRequest?.role ?? "—"}</strong>
+                  </div>
+
+                  <div className="review-detail">
+                    <span>Status</span>
+                    {selectedRequest ? (
+                      <span
+                        className={`status-badge status-${selectedRequest.status.toLowerCase()}`}
+                      >
+                        {selectedRequest.status}
+                      </span>
+                    ) : (
+                      <strong>—</strong>
+                    )}
+                  </div>
+                </div>
+
+                <label className="review-comments-field">
                   Review Comments
                   <textarea
                     value={reviewComments}
@@ -679,12 +720,66 @@ function App() {
                     placeholder="Enter the reason for approval or rejection."
                     maxLength={1000}
                     rows={3}
-                    disabled={processingReviewId !== null}
+                    disabled={
+                      !selectedRequest ||
+                      selectedRequest.status.toLowerCase() !== "pending" ||
+                      processingReviewId !== null
+                    }
                   />
                   <span className="field-hint">
                     Optional. Maximum 1,000 characters.
                   </span>
                 </label>
+
+                <div className="review-panel-actions">
+                  <span className="field-hint">
+                    {!selectedRequest
+                      ? "Select a pending request from the table below."
+                      : selectedRequest.status.toLowerCase() !== "pending"
+                        ? "This request has already been reviewed."
+                        : "Review the request before approving or rejecting it."}
+                  </span>
+
+                  <div className="review-actions">
+                    <button
+                      type="button"
+                      className="review-icon-button approve-icon-button"
+                      title="Approve selected request"
+                      aria-label="Approve selected request"
+                      disabled={
+                        !selectedRequest ||
+                        selectedRequest.status.toLowerCase() !== "pending" ||
+                        processingReviewId !== null
+                      }
+                      onClick={() => {
+                        if (selectedRequest) {
+                          void handleReview(selectedRequest.id, "Approved");
+                        }
+                      }}
+                    >
+                      ✓
+                    </button>
+
+                    <button
+                      type="button"
+                      className="review-icon-button reject-icon-button"
+                      title="Reject selected request"
+                      aria-label="Reject selected request"
+                      disabled={
+                        !selectedRequest ||
+                        selectedRequest.status.toLowerCase() !== "pending" ||
+                        processingReviewId !== null
+                      }
+                      onClick={() => {
+                        if (selectedRequest) {
+                          void handleReview(selectedRequest.id, "Rejected");
+                        }
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div className="request-filters">
@@ -739,76 +834,67 @@ function App() {
                   <table>
                     <thead>
                       <tr>
-                        <th>ID</th>
+                        <th>Request ID</th>
                         <th>Employee</th>
                         <th>Application</th>
                         <th>Requested Role</th>
                         <th>Status</th>
-                        <th>Reviewed By</th>
-                        <th>Reviewed At</th>
-                        <th>Review Comments</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {paginatedRequests.map((request) => (
-                        <tr key={request.id}>
-                          <td>#{request.id}</td>
-                          <td>{request.employee}</td>
-                          <td>{request.application}</td>
-                          <td>{request.role}</td>
-                          <td>
-                            <span
-                              className={`status-badge status-${request.status.toLowerCase()}`}
-                            >
-                              {request.status}
-                            </span>
-                          </td>
-                          <td>{request.reviewedBy ?? "—"}</td>
-                          <td>{formatTimestamp(request.reviewedAtUtc)}</td>
-                          <td>
-                            {request.reviewComments
-                              ? request.reviewComments.length > 80
-                                ? `${request.reviewComments.slice(0, 80)}…`
-                                : request.reviewComments
-                              : "—"}
-                          </td>
-                          <td className="review-actions">
-                            {request.status.toLowerCase() === "pending" ? (
-                              <>
+                      {paginatedRequests.map((request) => {
+                        const isPending = request.status.toLowerCase() === "pending";
+                        const isSelected = selectedRequestId === request.id;
+
+                        return (
+                          <tr
+                            key={request.id}
+                            className={[
+                              isPending ? "request-row-selectable" : "",
+                              isSelected ? "request-row-selected" : "",
+                            ]
+                              .filter(Boolean)
+                              .join(" ")}
+                            onClick={() => {
+                              if (isPending) {
+                                setSelectedRequestId(request.id);
+                                setReviewComments("");
+                              }
+                            }}
+                            aria-selected={isSelected}
+                          >
+                            <td>#{request.id}</td>
+                            <td>{request.employee}</td>
+                            <td>{request.application}</td>
+                            <td>{request.role}</td>
+                            <td>
+                              <span
+                                className={`status-badge status-${request.status.toLowerCase()}`}
+                              >
+                                {request.status}
+                              </span>
+                            </td>
+                            <td>
+                              {isPending ? (
                                 <button
                                   type="button"
-                                  className="review-icon-button approve-icon-button"
-                                  title="Approve request"
-                                  aria-label={`Approve request ${request.id}`}
-                                  disabled={processingReviewId !== null}
-                                  onClick={() =>
-                                    void handleReview(request.id, "Approved")
-                                  }
+                                  className="secondary-button request-select-button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setSelectedRequestId(request.id);
+                                    setReviewComments("");
+                                  }}
                                 >
-                                  ✓
+                                  {isSelected ? "Selected" : "Review"}
                                 </button>
-
-                                <button
-                                  type="button"
-                                  className="review-icon-button reject-icon-button"
-                                  title="Reject request"
-                                  aria-label={`Reject request ${request.id}`}
-                                  disabled={processingReviewId !== null}
-                                  onClick={() =>
-                                    void handleReview(request.id, "Rejected")
-                                  }
-                                >
-                                  ×
-                                </button>
-                              </>
-                            ) : (
-                              <span className="field-hint">Reviewed</span>
-                            )}
-                          </td>
-
-                        </tr>
-                      ))}
+                              ) : (
+                                <span className="field-hint">Reviewed</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

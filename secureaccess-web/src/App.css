@@ -555,8 +555,8 @@ textarea {
 
 .table-wrapper table {
   width: 100%;
-  min-width: 1100px;
-  table-layout: auto;
+  min-width: 0;
+  table-layout: fixed;
   border-collapse: collapse;
   text-align: left;
   font-size: 12px;
@@ -564,7 +564,7 @@ textarea {
 
 .table-wrapper th,
 .table-wrapper td {
-  padding: 11px 10px;
+  padding: 9px 7px;
   border-bottom: 1px solid #eaecf0;
   vertical-align: middle;
 }
@@ -823,7 +823,7 @@ textarea {
   }
 
   .table-wrapper table {
-    min-width: 1100px;
+    min-width: 0;
   }
 }
 
@@ -933,7 +933,7 @@ textarea {
   }
 
   .table-wrapper table {
-    min-width: 1100px;
+    min-width: 0;
   }
 
   .app-footer {
@@ -979,7 +979,6 @@ textarea {
 
 /* Keep Reviewed cells consistent with the action buttons */
 .review-actions {
-  border-bottom: 1px solid #e5eaf1;
   vertical-align: middle;
 }
 
@@ -988,4 +987,157 @@ textarea {
   line-height: 1.5;
   padding: 0;
   margin: 0;
+}
+
+/* Review panel: request details and decision controls */
+.review-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 14px 0;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.review-request-details {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.review-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.review-detail > span:first-child {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.review-detail strong {
+  min-width: 0;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.review-comments-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.review-comments-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  resize: vertical;
+  font: inherit;
+  font-weight: 400;
+}
+
+.review-panel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.request-row-selectable {
+  cursor: pointer;
+}
+
+.request-row-selectable:hover {
+  background: #f8fafc;
+}
+
+.request-row-selected {
+  background: #eff6ff !important;
+  box-shadow: inset 3px 0 #356ac3;
+}
+
+.request-row-selected td {
+  background: transparent;
+}
+
+.request-select-button {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.review-icon-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1000px) {
+  .review-request-details {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .review-request-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-panel-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Compact Request ID and balanced request table columns */
+.table-wrapper table th:nth-child(1),
+.table-wrapper table td:nth-child(1) {
+  width: 11%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.table-wrapper table th:nth-child(2),
+.table-wrapper table td:nth-child(2) {
+  width: 21%;
+}
+
+.table-wrapper table th:nth-child(3),
+.table-wrapper table td:nth-child(3) {
+  width: 22%;
+}
+
+.table-wrapper table th:nth-child(4),
+.table-wrapper table td:nth-child(4) {
+  width: 22%;
+}
+
+.table-wrapper table th:nth-child(5),
+.table-wrapper table td:nth-child(5) {
+  width: 12%;
+}
+
+.table-wrapper table th:nth-child(6),
+.table-wrapper table td:nth-child(6) {
+  width: 12%;
 }
