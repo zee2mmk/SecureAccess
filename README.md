@@ -4,6 +4,12 @@ SecureAccess is a portfolio project demonstrating the design and development of 
 
 The project showcases full-stack engineering skills using Microsoft technologies and modern web development tools.
 
+## Demo Video
+
+Watch the SecureAccess application walkthrough to see the main features in action, including authentication, access request creation, approval workflows, and audit history.
+
+https://github.com/user-attachments/assets/559ebc72-5d10-40cf-a927-01ec6b19bf99
+
 ## Key Features
 
 - **Microsoft Entra ID Authentication** — Sign-in and sign-out using Microsoft Authentication Library (MSAL).
