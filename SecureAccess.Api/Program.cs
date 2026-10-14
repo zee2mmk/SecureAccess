@@ -462,12 +462,4 @@ app.MapPut("/api/access-requests/{id:int}/review", async (
     });
 }).RequireAuthorization();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider
-        .GetRequiredService<SecureAccessDbContext>();
-
-    await SecureAccessSeeder.SeedAsync(db);
-}
-
 app.Run();
